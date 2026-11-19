@@ -1,0 +1,321 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Z3ZUSU - 1024 FATES</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Share+Tech+Mono&display=swap');
+
+*{box-sizing:border-box}
+html,body{
+ margin:0;width:100%;height:100%;overflow:hidden;
+ background:#050506;color:#eee;
+ font-family:'Share Tech Mono',monospace;
+}
+#app{
+ width:100%;max-width:520px;height:100dvh;margin:auto;
+ display:flex;flex-direction:column;
+ padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+ background:radial-gradient(ellipse at 50% 15%,#291019,#080709 70%);
+}
+header{text-align:center;padding:8px 0;flex-shrink:0}
+.logo{
+ font-family:'Creepster',cursive;font-size:clamp(42px,12vw,65px);
+ color:#c20c35;text-shadow:0 0 18px #a00028;
+ letter-spacing:5px;margin:0;
+}
+.sub{font-size:10px;color:#95858a;letter-spacing:3px}
+#status{
+ display:flex;justify-content:space-between;gap:5px;
+ color:#b6a6ab;font-size:10px;padding:8px 0;
+ border-top:1px solid #481522;border-bottom:1px solid #481522;
+ flex-shrink:0;
+}
+#progress{height:4px;background:#25121a;flex-shrink:0}
+#bar{height:100%;width:0;background:#c21d43;transition:.3s}
+main{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center}
+.screen{display:none;flex-direction:column;gap:12px;min-height:0}
+.screen.active{display:flex;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+h2{font-size:21px;text-align:center;color:#d63a58;margin:0}
+.story{text-align:center;font-size:13px;line-height:1.55;color:#ddd;margin:0}
+.hint{text-align:center;color:#92868a;font-size:10px}
+button{
+ width:100%;min-height:44px;padding:10px;
+ border:1px solid #76203a;border-radius:5px;
+ background:#170d12;color:#eee;
+ font-family:inherit;font-size:12px;
+ cursor:pointer;touch-action:manipulation;
+}
+button:active{background:#86213e;transform:scale(.98)}
+.primary{background:#79172f}
+.choices{display:flex;flex-direction:column;gap:8px}
+.scene{
+ display:flex;align-items:center;gap:12px;
+ background:#140d11;border:1px solid #572034;
+ border-radius:6px;padding:10px;min-height:105px;
+}
+.sceneArt{
+ width:105px;height:85px;flex-shrink:0;
+ display:flex;align-items:center;justify-content:center;
+ font-size:54px;
+ background:radial-gradient(circle,#481522,#10090c);
+ border:1px solid #69233a;border-radius:5px;
+}
+.sceneInfo{flex:1;min-width:0}
+.sceneInfo strong{display:block;color:#df5470;font-size:12px;margin-bottom:6px}
+.sceneInfo p{font-size:10px;line-height:1.4;color:#c8b9be;margin:0}
+#endingNo{font-size:11px;text-align:center;color:#b4a2a8}
+#endingTitle{
+ font-family:'Creepster',cursive;text-align:center;
+ font-size:36px;color:#df3157;
+}
+#endingText{text-align:center;font-size:13px;line-height:1.6}
+#endingIcon{text-align:center;font-size:60px}
+footer{text-align:center;color:#65585d;font-size:9px;padding:7px 0;flex-shrink:0}
+@media(max-height:650px){
+ header{padding:3px 0}
+ .logo{font-size:39px}
+ .screen{gap:7px}
+ .scene{min-height:75px;padding:7px}
+ .sceneArt{height:65px;width:75px;font-size:40px}
+ button{min-height:39px;padding:8px}
+ .story{font-size:11px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<header>
+<h1 class="logo">Z3ZUSU</h1>
+<div class="sub">1024 FATES · THE HORROR GAME</div>
+</header>
+
+<div id="status">
+<span id="chapter">PROLOG</span>
+<span id="count">0 / 5</span>
+</div>
+<div id="progress"><div id="bar"></div></div>
+
+<main>
+
+<section class="screen active" id="intro">
+<div id="endingIcon">🌑</div>
+<h2>1024 WEGE. 1024 SCHICKSALE.</h2>
+<p class="story">
+Es ist 03:13 Uhr. Du wachst in einem fremden Haus auf.
+Dein Handy hat keinen Empfang. Auf dem Bildschirm steht:
+„Fünf Entscheidungen. Dein Schicksal.“
+</p>
+<p class="hint">Jede Entscheidung verändert deine Geschichte.</p>
+<button class="primary" onclick="start()">DIE NACHT BEGINNT</button>
+</section>
+
+<section class="screen" id="game">
+<h2 id="sceneTitle"></h2>
+<p class="story" id="sceneText"></p>
+<div class="choices" id="choices"></div>
+</section>
+
+<section class="screen" id="preview">
+<h2>DEINE ENTSCHEIDUNG</h2>
+<div class="scene">
+ <div class="sceneArt" id="previewArt">🏃</div>
+ <div class="sceneInfo">
+  <strong id="previewTitle">Draußen</strong>
+  <p id="previewText"></p>
+ </div>
+</div>
+<p class="story">Diese Entscheidung wird Teil deiner Geschichte.</p>
+<button class="primary" onclick="next()">WEITER →</button>
+</section>
+
+<section class="screen" id="ending">
+<div id="endingIcon">🌅</div>
+<div id="endingNo"></div>
+<div id="endingTitle"></div>
+<p id="endingText"></p>
+<p class="hint" id="endingType"></p>
+<button class="primary" onclick="restart()">NEUE GESCHICHTE</button>
+<button onclick="showCollection()">ALLE 1024 ENDEN</button>
+</section>
+
+<section class="screen" id="collection">
+<div style="font-size:45px;text-align:center">📖</div>
+<h2>1024 SCHICKSALE</h2>
+<p class="story">Fünf Entscheidungen mit jeweils vier Möglichkeiten ergeben 1024 verschiedene Kombinationen.</p>
+<p class="story" id="collectionText"></p>
+<button class="primary" onclick="restart()">ZURÜCK</button>
+</section>
+
+</main>
+<footer>Z3ZUSU © 2026 · EVERY CHOICE HAS A CONSEQUENCE</footer>
+</div>
+
+<script>
+const chapters=[
+{
+name:"KAPITEL 1 · DAS HAUS",
+title:"DU BIST IM HAUS",
+text:"Du stehst in einem dunklen Flur. Hinter dir fällt die Tür zu. Was machst du?",
+choices:[
+["🏃","Aus dem Haus rennen","Du erreichst den Garten. Das Haus liegt hinter dir.","🏚️","Der Garten"],
+["🚪","Die nächste Tür öffnen","Du betrittst ein Zimmer mit einem alten Telefon.","🚪","Das Zimmer"],
+["🪜","Die Treppe hochgehen","Oben hörst du ein leises Geräusch.","🪜","Die Treppe"],
+["🔦","Die Umgebung untersuchen","Du entdeckst einen geheimnisvollen Schlüssel.","🔑","Der Schlüssel"]
+]},
+{
+name:"KAPITEL 2 · DIE NACHT",
+title:"EINE SELTSAME NACHRICHT",
+text:"Dein Handy leuchtet auf. Eine Nachricht erscheint: „Ich weiß, wo du bist.“",
+choices:[
+["📞","Zurückrufen","Am anderen Ende meldet sich eine unbekannte Stimme.","📱","Der Anruf"],
+["🚶","Weitergehen","Du folgst einem schwachen Licht.","🌙","Der Weg"],
+["📩","Die Nachricht beantworten","Eine neue Nachricht erscheint sofort.","💬","Die Antwort"],
+["🔋","Das Handy ausschalten","Du bist plötzlich ganz allein.","📵","Die Stille"]
+]},
+{
+name:"KAPITEL 3 · DER GEHEIME RAUM",
+title:"DIE VERBORGENE TÜR",
+text:"Du findest eine Tür. Auf ihr stehen die Zahlen 03:13. Was tust du?",
+choices:[
+["🔐","Das Schloss öffnen","Die Tür gibt ein leises Klicken von sich.","🔓","Das Schloss"],
+["🪞","Den Spiegel berühren","Dein Spiegelbild scheint etwas zeigen zu wollen.","🪞","Der Spiegel"],
+["🗝️","Den Schlüssel benutzen","Der Schlüssel passt tatsächlich.","🗝️","Der Schlüssel"],
+["⬅️","Zurückgehen","Du bemerkst einen zweiten Ausgang.","🚪","Der Ausgang"]
+]},
+{
+name:"KAPITEL 4 · DIE WAHRHEIT",
+title:"DU BIST NICHT ALLEIN",
+text:"Eine Person steht am Ende des Flurs. Sie sagt: „Du musst mir vertrauen.“",
+choices:[
+["🤝","Der Person vertrauen","Sie zeigt dir einen geheimen Weg.","🧍","Die Begegnung"],
+["🏃","Weglaufen","Du erreichst eine alte Treppe.","🏃","Die Flucht"],
+["❓","Nach der Wahrheit fragen","Die Person erzählt dir etwas über das Haus.","📜","Die Wahrheit"],
+["🙈","Dich verstecken","Du wartest, bis es wieder ruhig ist.","🌑","Das Versteck"]
+]},
+{
+name:"KAPITEL 5 · DAS ENDE",
+title:"DIE LETZTE ENTSCHEIDUNG",
+text:"Vor dir ist eine Tür. Dahinter wartet die Freiheit. Oder etwas anderes.",
+choices:[
+["🌅","Die Tür öffnen","Das Licht der Morgendämmerung erscheint.","🌅","Der Morgen"],
+["🔒","Die Tür verschließen","Du bleibst im Haus und suchst weiter.","🔐","Das Schloss"],
+["🪞","Zurück zum Spiegel","Du erkennst endlich das Geheimnis.","🪞","Die Wahrheit"],
+["🚶","Einen anderen Weg nehmen","Ein unbekannter Gang öffnet sich.","🌌","Der geheime Weg"]
+]}
+];
+
+const endingNames=[
+"DER MORGEN","DIE LEERE STRASSE","DAS LETZTE LICHT","DER FREMDE SCHLÜSSEL",
+"DIE VERGESSENE TÜR","NIEMAND WAR DA","DIE RÜCKKEHR","DAS ALTE FOTO",
+"DIE STILLE NACHT","DER GEHEIME AUSGANG","DAS FALSCHE ZIMMER","DER LETZTE ANRUF",
+"DIE VERSCHLOSSENE WELT","DAS LICHT IM FENSTER","DER BEOBACHTER","DIE ANDERE SEITE",
+"DAS VERLORENE GEDÄCHTNIS","DIE NACHTWACHE","DIE LETZTE AUFZEICHNUNG","DER UNBEKANNTE WEG"
+];
+
+let step=0;
+let path=[];
+let selected=null;
+
+function show(id){
+ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+}
+
+function start(){
+ step=0;
+ path=[];
+ show('game');
+ draw();
+}
+
+function draw(){
+ const s=chapters[step];
+ document.getElementById('chapter').textContent=s.name;
+ document.getElementById('count').textContent=step+' / 5';
+ document.getElementById('bar').style.width=(step/5*100)+'%';
+ document.getElementById('sceneTitle').textContent=s.title;
+ document.getElementById('sceneText').textContent=s.text;
+ const area=document.getElementById('choices');
+ area.innerHTML='';
+ s.choices.forEach((c,i)=>{
+  const b=document.createElement('button');
+  b.textContent=c[0]+'  '+c[1];
+  b.onclick=()=>choose(i);
+  area.appendChild(b);
+ });
+}
+
+function choose(i){
+ selected=chapters[step].choices[i];
+ path.push(i);
+ document.getElementById('previewArt').textContent=selected[3];
+ document.getElementById('previewTitle').textContent=selected[4];
+ document.getElementById('previewText').textContent=selected[2];
+ show('preview');
+}
+
+function next(){
+ step++;
+ if(step<chapters.length){
+  show('game');
+  draw();
+ }else{
+  finish();
+ }
+}
+
+function finish(){
+ let number=0;
+ path.forEach(n=>number=number*4+n);
+ const id=number+1;
+ const risk=path.reduce((a,b)=>a+b,0);
+ const survive=(risk%5===0 || risk%5===2);
+ const trapped=(risk%5===1);
+ const title=endingNames[number%endingNames.length]+' #'+id;
+ let type,story,icon;
+
+ if(survive){
+  type="✓ DU HAST ÜBERLEBT";
+  story="Die Tür öffnet sich. Du trittst hinaus und siehst den Sonnenaufgang. Die Nacht ist vorbei. Doch auf deinem Handy erscheint eine letzte Nachricht: „Bis bald.“";
+  icon="🌅";
+ }else if(trapped){
+  type="✦ DU BIST GEFANGEN";
+  story="Du findest keinen Ausgang mehr. Das Haus scheint sich verändert zu haben. Vielleicht kannst du beim nächsten Versuch einen anderen Weg finden.";
+  icon="🏚️";
+ }else{
+  type="✕ GAME OVER";
+  story="Deine Geschichte endet hier. Die Nacht hat gewonnen. Es gibt jedoch noch viele andere Wege und Enden zu entdecken.";
+  icon="🌑";
+ }
+
+ document.getElementById('endingIcon').textContent=icon;
+ document.getElementById('endingNo').textContent='ENDE '+id+' VON 1024';
+ document.getElementById('endingTitle').textContent=title;
+ document.getElementById('endingText').textContent=story;
+ document.getElementById('endingType').textContent=type;
+ document.getElementById('chapter').textContent='GESCHICHTE BEENDET';
+ document.getElementById('count').textContent='5 / 5';
+ document.getElementById('bar').style.width='100%';
+ show('ending');
+}
+
+function restart(){
+ document.getElementById('bar').style.width='0';
+ document.getElementById('chapter').textContent='PROLOG';
+ document.getElementById('count').textContent='0 / 5';
+ show('intro');
+}
+
+function showCollection(){
+ document.getElementById('collectionText').textContent=
+ 'Du hast gerade Ende '+(path.reduce((a,b)=>a*4+b,0)+1)+' von 1024 möglichen Enden erreicht. Jede andere Kombination deiner Entscheidungen führt zu einer anderen Endnummer.';
+ show('collection');
+}
+</script>
+</body>
+</html>
